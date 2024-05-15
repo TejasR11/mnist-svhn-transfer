@@ -1,18 +1,11 @@
 import argparse
 import os
-import torch
 from solver import Solver
 from torch.backends import cudnn
 from data_loader import get_loader
-import atexit
-import shutil
 
 def str2bool(v):
-    return v.lower() in ('true', '1', 'yes')
-
-def cleanup_temp_directories():
-    # Cleanup temporary directories
-    shutil.rmtree('/tmp/pymp-*', ignore_errors=True)
+    return v.lower() in ('true')
 
 def main(config):
     svhn_loader, mnist_loader = get_loader(config)
@@ -20,23 +13,17 @@ def main(config):
     solver = Solver(config, svhn_loader, mnist_loader)
     cudnn.benchmark = True 
     
-    # Move data loaders to the same device as the solver
-    svhn_loader = [(x.to(solver.device), y.to(solver.device)) for x, y in svhn_loader]
-    mnist_loader = [(x.to(solver.device), y.to(solver.device)) for x, y in mnist_loader]
-    
     # create directories if not exist
     if not os.path.exists(config.model_path):
         os.makedirs(config.model_path)
     if not os.path.exists(config.sample_path):
         os.makedirs(config.sample_path)
     
-    try:
-        if config.mode == 'train':
-            solver.train()
-        elif config.mode == 'sample':
-            solver.sample()
-    except Exception as e:
-        print("An error occurred:", e)
+    if config.mode == 'train':
+        solver.train()
+    elif config.mode == 'sample':
+        solver.sample()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -68,8 +55,4 @@ if __name__ == '__main__':
 
     config = parser.parse_args()
     print(config)
-
-    # Register cleanup function
-    atexit.register(cleanup_temp_directories)
-
     main(config)
