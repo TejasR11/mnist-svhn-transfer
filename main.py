@@ -20,12 +20,6 @@ def main(config):
     solver = Solver(config, svhn_loader, mnist_loader)
     cudnn.benchmark = True 
     
-    # Move the solver and data loaders to the same device as the model
-    solver.g12.to(solver.device)
-    solver.g21.to(solver.device)
-    solver.d1.to(solver.device)
-    solver.d2.to(solver.device)
-    
     # Move data loaders to the same device as the solver
     svhn_loader = [(x.to(solver.device), y.to(solver.device)) for x, y in svhn_loader]
     mnist_loader = [(x.to(solver.device), y.to(solver.device)) for x, y in mnist_loader]
@@ -38,7 +32,7 @@ def main(config):
     
     try:
         if config.mode == 'train':
-            solver.train(config.train_iters)
+            solver.train()
         elif config.mode == 'sample':
             solver.sample()
     except Exception as e:
